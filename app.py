@@ -2,27 +2,42 @@ import streamlit as st
 import pickle
 import requests
 import time
+from dotenv import load_dotenv
+import os
 
+
+# Load environment variables
+load_dotenv()
+
+# Get TMDB API key from .env
+api_key = os.getenv("TMDB_API_KEY")
 
 
 def fetch_poster(movie_id):
 
-    url = 'https://api.themoviedb.org/3/movie/{}?api_key=50ad3b9950f703f7acecc5edb8ea8bd6'.format(movie_id)
+    url = 'https://api.themoviedb.org/3/movie/{}?api_key={}'.format(
+        movie_id, api_key
+    )
 
-    for attempt in range(3):
+    for attempt in range(5):
 
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=15)
             response.raise_for_status()
 
             data = response.json()
 
-
             if data.get('poster_path'):
-
                 return "https://image.tmdb.org/t/p/w500" + data['poster_path']
 
             return None
+
+        except requests.exceptions.RequestException:
+
+            if attempt < 4:
+                time.sleep(2)
+            else:
+                return None
 
         except requests.exceptions.RequestException as e:
 
@@ -32,9 +47,11 @@ def fetch_poster(movie_id):
 
             time.sleep(1)
 
+
 movies_list = pickle.load(open('movies.pkl', 'rb'))
 
 similarity = pickle.load(open('similarity.pkl', 'rb'))
+
 
 def recommend(movie):
 
@@ -64,6 +81,7 @@ def recommend(movie):
         recommended_movies_posters.append(poster)
 
     return recommended_movies, recommended_movies_posters
+
 
 st.title('Movie Recommender System')
 
