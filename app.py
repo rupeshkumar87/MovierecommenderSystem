@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 import os
 
 
-# Load environment variables
+
 load_dotenv()
 
-# Get TMDB API key from .env
+
 api_key = os.getenv("TMDB_API_KEY")
 
 
